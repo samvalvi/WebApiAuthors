@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CS8073: El resultado de la expresión siempre es el mismo ya que un valor de este tipo siempre es igual a "null"
+dotnet_diagnostic.CS8073.severity = silent
