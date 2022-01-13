@@ -25,7 +25,7 @@ namespace WebApiAuthors.Controllers
         }
 
         [HttpGet]
-        [Route("/get-book/{bookId}")]
+        [Route("/get-book/{bookId:int}")]
         public async Task<ActionResult<Book>> GetBookAsync(int bookId)
         {
             var bookToShow = await _db.Books.AnyAsync(x => x.BookId == bookId);
@@ -42,9 +42,15 @@ namespace WebApiAuthors.Controllers
         public async Task<ActionResult> AddBookAsync(Book book)
         {
             var authorExist = await _db.Authors.AnyAsync(x => x.AuthorId == book.AuthorId);
-            if(!authorExist)
+            if (!authorExist)
             {
                 return NotFound("Author doesn't exist.");
+            }
+
+            var bookExist = await _db.Books.AnyAsync(x => x.Title == book.Title);
+            if (bookExist)
+            {
+                return BadRequest($"Book already exist.");
             }
 
             await _db.Books.AddAsync(book);
@@ -54,7 +60,7 @@ namespace WebApiAuthors.Controllers
         }
 
         [HttpPut]
-        [Route("/update-book/{bookId}")]
+        [Route("/update-book/{bookId:int}")]
         public async Task<ActionResult> UpdateBookASync(Book book, int bookId)
         {
             if(book.BookId != bookId)
@@ -74,7 +80,7 @@ namespace WebApiAuthors.Controllers
         }
 
         [HttpDelete]
-        [Route("/delte-book/{bookId}")]
+        [Route("/delte-book/{bookId:int}")]
         public async Task<ActionResult> DeleteBookAsync(int bookId)
         {
             var bookToDelete = await _db.Books.FindAsync(bookId);

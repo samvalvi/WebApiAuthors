@@ -10,10 +10,12 @@ namespace WebApiAutores.Controllers
     public class AuthorController : Controller
     {
         private readonly AppDBContext _db;
+        private readonly ILogger<AuthorController> _logger;
 
-        public AuthorController(AppDBContext dBContext)
+        public AuthorController(AppDBContext dBContext, ILogger<AuthorController> logger)
         {
-            _db = dBContext;       
+            _db = dBContext;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -25,9 +27,15 @@ namespace WebApiAutores.Controllers
         }
 
         [HttpGet]
-        [Route("/get-author/{authorId}")]
-        public async Task<Author> GetAuthorAsync(int authorId)
+        [Route("/get-author/{authorId:int}")]
+        public async Task<ActionResult<Author>> GetAuthorAsync(int authorId)
         { 
+            var authorExist = await _db.Authors.AnyAsync(x => x.AuthorId == authorId);
+            if(!authorExist)
+            {
+                _logger.LogError("Author id doesn't exist.");
+                return BadRequest("Author doesn't exist.");
+            }
             var author = await _db.Authors.FindAsync(authorId);
             return author;
         }
@@ -36,6 +44,11 @@ namespace WebApiAutores.Controllers
         [Route("/add-author")]
         public async Task<ActionResult> AddAuthorAsync(Author author)
         {
+            var exist = await _db.Authors.AnyAsync(x => x.Name == author.Name);
+            if(exist)
+            {
+                return BadRequest($"Author {author.Name} doesn't exist.");
+            }
             await _db.Authors.AddAsync(author);
             await _db.SaveChangesAsync();
             _db.Entry(author).State = EntityState.Detached;
@@ -43,7 +56,7 @@ namespace WebApiAutores.Controllers
         }
 
         [HttpPut]
-        [Route("/update-author/{authorId}")]
+        [Route("/update-author/{authorId:int}")]
         public async Task<ActionResult> UpdateAuthorAsync(Author author, int authorId)
         {
             
@@ -65,7 +78,7 @@ namespace WebApiAutores.Controllers
         }
 
         [HttpDelete]
-        [Route("/delete-author/{authorId}")]
+        [Route("/delete-author/{authorId:int}")]
         public async Task<ActionResult> DeleteAuthorAsync(int authorId)
         {
             var result = await _db.Authors.FindAsync(authorId);
