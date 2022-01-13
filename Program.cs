@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using WebApiAuthors.Middlewares;
 using WebApiAutores.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<LoggerResponseMiddleware>();
 
 app.UseHttpsRedirection();
 
