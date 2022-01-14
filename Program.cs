@@ -1,6 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using WebApiAuthors.Filters;
 using WebApiAuthors.Middlewares;
+using WebApiAuthors.Services;
 using WebApiAutores.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,8 +17,15 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddResponseCaching();
+builder.Services.AddTransient<MyActionFilter>();
+builder.Services.AddHostedService<WriteFile>();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddControllers().AddJsonOptions(x =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add(typeof(ExceptionFilter));
+}).AddJsonOptions(x =>
 {
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
@@ -32,6 +43,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<LoggerResponseMiddleware>();
 
 app.UseHttpsRedirection();
+
+app.UseResponseCaching();
 
 app.UseAuthorization();
 

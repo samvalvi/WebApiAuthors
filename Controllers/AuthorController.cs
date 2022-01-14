@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApiAutores.Data;
 using WebApiAutores.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApiAutores.Controllers
 {
@@ -19,7 +20,9 @@ namespace WebApiAutores.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 10)]
         [Route("/get-authors")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Author>>> GetAutorsAsync()
         {
             var authors = await _db.Authors.AsNoTracking().Include(x => x.Books).ToListAsync();

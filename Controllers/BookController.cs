@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebApiAuthors.Filters;
 using WebApiAuthors.Models;
 using WebApiAutores.Data;
 
@@ -17,7 +19,10 @@ namespace WebApiAuthors.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 10)]
         [Route("/get-books")]
+        //[Authorize]
+        [ServiceFilter(typeof(MyActionFilter))]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooksASync()
         {
             var books = await _db.Books.AsNoTracking().ToListAsync();
@@ -26,6 +31,7 @@ namespace WebApiAuthors.Controllers
 
         [HttpGet]
         [Route("/get-book/{bookId:int}")]
+        [ServiceFilter(typeof(MyActionFilter))]
         public async Task<ActionResult<Book>> GetBookAsync(int bookId)
         {
             var bookToShow = await _db.Books.AnyAsync(x => x.BookId == bookId);
